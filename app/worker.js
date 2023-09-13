@@ -41,7 +41,7 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
       .toString()
       .trim()
       .toLocaleLowerCase()
-      .split("\\r\\n");
+      .split("\r\n");
     const { command, data } = getCommand(requestCleansed);
     console.log({
       command,

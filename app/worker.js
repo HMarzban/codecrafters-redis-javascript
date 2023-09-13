@@ -23,7 +23,6 @@ const getCommand = (req) => {
   const [length, ...data] = req;
   const dataNoLengths = data.filter((x) => x.charAt(0) !== "$");
 
-  console.log(dataNoLengths, isCommand(dataNoLengths));
   if (isCommand(dataNoLengths)) {
     return {
       command: dataNoLengths[0],
@@ -61,25 +60,13 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
       const expiryType = data.at(-2);
       const time = data.at(-1);
 
-      console.log({ key, value, expiryType, time });
-
       if (expiryType === "px" && time)
-        setTimeout(() => {
-          console.log("expired");
-          dataStore.delete(key);
-        }, +time);
-
-      dataStore.set(key, {
-        value,
-        expiryType,
-        time,
-      });
+        setTimeout(() => dataStore.delete(key), +time);
 
       connection.write("+OK\r\n");
     } else if (command === "get") {
       const key = data.at(0);
       const result = dataStore.get(key)?.value;
-      console.log({ key, result });
       if (result) connection.write(`+${result}\r\n`);
       else connection.write("$-1\r\n");
     }

@@ -1,6 +1,8 @@
 const cluster = require("cluster");
 const os = require("os");
-const server = require("./worker");
+const dataStore = new Map();
+
+const server = require("./worker")(dataStore);
 
 // if (cluster.isMaster) {
 //   // Code for the master process

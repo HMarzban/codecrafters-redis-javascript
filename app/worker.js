@@ -56,14 +56,16 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
       connection.write(`+${data.join(" ")}\r\n`);
     } else if (command === "set") {
       const key = data.at(0);
-      // value must be select from index 1 to the second last index
-      const value = data.slice(1, -2).join(" ");
+      const value = data
+        .slice(1, data.includes("px") ? data.length - 2 : data.length)
+        .join(" ");
       const expiryType = data.at(-2);
       const time = data.at(-1);
 
       console.log({ key, value, expiryType, time });
 
-      if (expiryType && time) setTimeout(() => dataStore.delete(key), time);
+      if (expiryType == "PX" && time)
+        setTimeout(() => dataStore.delete(key), time);
 
       dataStore.set(key, {
         value,

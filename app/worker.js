@@ -61,6 +61,8 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
       const expiryType = data.at(-2);
       const time = data.at(-1);
 
+      console.log({ key, value, expiryType, time });
+
       if (expiryType && time) setTimeout(() => dataStore.delete(key), time);
 
       dataStore.set(key, {
@@ -73,7 +75,7 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
     } else if (command === "get") {
       const key = data.at(0);
       const result = dataStore.get(key);
-      if (result) onnection.write(`+${result}\r\n`);
+      if (result) connection.write(`+${result}\r\n`);
       else connection.write("-1\r\n");
     }
 

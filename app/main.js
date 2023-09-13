@@ -1,6 +1,6 @@
-const net = require("net");
 const cluster = require("cluster");
 const os = require("os");
+const server = require("./worker");
 
 if (cluster.isMaster) {
   // Code for the master process
@@ -25,24 +25,6 @@ if (cluster.isMaster) {
     cluster.fork();
   });
 } else {
-  // Code for worker processes
-  const server = net.createServer({ keepAlive: true }, (connection) => {
-    // Handle connection
-    console.log("client connected, PID:", process.pid);
-
-    connection.on("data", (data) => {
-      connection.write("+PONG\r\n");
-      if (data.toString().includes("exit")) {
-        connection.write("You will be disconnected\r\n");
-        connection.end();
-      }
-    });
-
-    connection.on("end", () => {
-      console.log("client disconnected, PID:", process.pid);
-    });
-  });
-
   server.listen(6379, () => {
     console.log(`server is listening, PID: ${process.pid}`);
   });

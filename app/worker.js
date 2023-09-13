@@ -1,4 +1,5 @@
 const net = require("net");
+const dataStore = new Map();
 
 const isCommand = (message) => {
   const normalized = message.at(0).toLowerCase();
@@ -39,8 +40,6 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
   // Handle connection
   console.log("client connected, PID:", process.pid);
 
-  const dataStore = new Map();
-
   connection.on("data", (req) => {
     const requestCleansed = req
       .toString()
@@ -64,8 +63,11 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
 
       console.log({ key, value, expiryType, time });
 
-      if (expiryType == "PX" && time)
-        setTimeout(() => dataStore.delete(key), +time);
+      if (expiryType === "px" && time)
+        setTimeout(() => {
+          console.log("expired");
+          dataStore.delete(key);
+        }, +time);
 
       dataStore.set(key, {
         value,
@@ -76,7 +78,8 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
       connection.write("+OK\r\n");
     } else if (command === "get") {
       const key = data.at(0);
-      const result = dataStore.get(key).value;
+      const result = dataStore.get(key)?.value;
+      console.log({ key, result, dataStore });
       if (result) connection.write(`+${result}\r\n`);
       else connection.write("-1\r\n");
     }

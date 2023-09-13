@@ -2,7 +2,6 @@ const net = require("net");
 
 const isCommand = (message) => {
   const normalized = message.at(0).toLowerCase();
-  console.log(normalized, "normalized");
 
   if (normalized === "echo") {
     return true;
@@ -19,10 +18,10 @@ const isCommand = (message) => {
   return false;
 };
 
-const normalizedReq = (req) => req.toLowerCase().split("\r\n");
-
 const getCommand = (req) => {
-  const dataNoLengths = req.filter((x) => x.charAt(0) !== "$");
+  const [length, ...data] = req;
+  const dataNoLengths = data.filter((x) => x.charAt(0) !== "$");
+
   console.log(dataNoLengths, isCommand(dataNoLengths));
   if (isCommand(dataNoLengths)) {
     return {
@@ -45,10 +44,9 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
   connection.on("data", (req) => {
     const requestCleansed = req
       .toString()
-      .replace("\r\n", "")
-      .replace("\\r\\n", "")
-      .split(/(\s+)/)
-      .filter((e) => e.trim().length > 0);
+      .trim()
+      .toLocaleLowerCase()
+      .split("\r\n");
 
     const { command, data } = getCommand(requestCleansed);
 
@@ -57,7 +55,7 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
     } else if (command === "echo") {
       connection.write(`+${data.join(" ")}\r\n`);
     } else if (command === "set") {
-      dataStore.set(data.ata(0), data.at(1));
+      dataStore.set(data.at(0), data.at(1));
       connection.write("+OK\r\n");
     } else if (command === "get") {
       connection.write(`+${dataStore.get(data.at(0))}\r\n`);

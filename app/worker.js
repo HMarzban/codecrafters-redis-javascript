@@ -65,7 +65,7 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
       console.log({ key, value, expiryType, time });
 
       if (expiryType == "PX" && time)
-        setTimeout(() => dataStore.delete(key), time);
+        setTimeout(() => dataStore.delete(key), +time);
 
       dataStore.set(key, {
         value,

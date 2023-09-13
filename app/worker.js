@@ -3,55 +3,62 @@ const net = require("net");
 // *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
 
 const isCommand = (message) => {
-  const normalized = message.trim().toLowerCase();
+  const normalized = message.at(0).toLowerCase();
+  console.log(normalized, "normalized");
+
   if (normalized === "echo") {
     return true;
   }
   if (normalized === "ping") {
     return true;
   }
+  if (normalized === "set") {
+    return true;
+  }
+  if (normalized === "get") {
+    return true;
+  }
   return false;
 };
 
 const getCommand = (req) => {
-  const [length, ...data] = req;
-  const dataNoLengths = data.filter((x) => x.charAt(0) !== "$");
-  return dataNoLengths.reduce(
-    (acc, curr) => {
-      if (isCommand(curr)) {
-        acc.command = curr; // Fixed assignment
-        return acc;
-      }
-      acc.data.push(curr);
-      return acc;
-    },
-    {
-      command: "",
-      data: [],
-    }
-  );
+  const dataNoLengths = req.filter((x) => x.charAt(0) !== "$");
+  console.log(dataNoLengths, isCommand(dataNoLengths));
+  if (isCommand(dataNoLengths)) {
+    return {
+      command: dataNoLengths[0],
+      data: dataNoLengths.slice(1),
+    };
+  }
+  return {
+    command: "error",
+    data: "error",
+  };
 };
 
 const server = net.createServer({ keepAlive: true }, (connection) => {
   // Handle connection
   console.log("client connected, PID:", process.pid);
 
+  const dataStore = new Map();
+
   connection.on("data", (req) => {
     const requestCleansed = req
       .toString()
-      .trim()
-      .toLocaleLowerCase()
-      .split("\r\n");
+      .split(/(\s+)/)
+      .filter((e) => e.trim().length > 0);
+
     const { command, data } = getCommand(requestCleansed);
-    console.log({
-      command,
-      data,
-    });
 
     if (command === "ping") {
       connection.write("+PONG\r\n");
     } else if (command === "echo") {
       connection.write(`+${data.join(" ")}\r\n`);
+    } else if (command === "set") {
+      dataStore.set(data.ata(0), data.at(1));
+      connection.write("+OK\r\n");
+    } else if (command === "get") {
+      connection.write(`+${dataStore.get(data.at(0))}\r\n`);
     }
 
     if (req.toString().includes("exit")) {

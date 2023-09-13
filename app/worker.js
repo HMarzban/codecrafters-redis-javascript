@@ -55,10 +55,26 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
     } else if (command === "echo") {
       connection.write(`+${data.join(" ")}\r\n`);
     } else if (command === "set") {
-      dataStore.set(data.at(0), data.at(1));
+      const key = data.at(0);
+      // value must be select from index 1 to the second last index
+      const value = data.slice(1, -2).join(" ");
+      const expiryType = data.at(-2);
+      const time = data.at(-1);
+
+      if (expiryType && time) setTimeout(() => dataStore.delete(key), time);
+
+      dataStore.set(key, {
+        value,
+        expiryType,
+        time,
+      });
+
       connection.write("+OK\r\n");
     } else if (command === "get") {
-      connection.write(`+${dataStore.get(data.at(0))}\r\n`);
+      const key = data.at(0);
+      const result = dataStore.get(key);
+      if (result) onnection.write(`+${result}\r\n`);
+      else connection.write("-1\r\n");
     }
 
     if (req.toString().includes("exit")) {

@@ -79,9 +79,9 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
     } else if (command === "get") {
       const key = data.at(0);
       const result = dataStore.get(key)?.value;
-      console.log({ key, result, dataStore });
+      console.log({ key, result });
       if (result) connection.write(`+${result}\r\n`);
-      else connection.write("-1\r\n");
+      else connection.write("$-1\r\n");
     }
 
     if (req.toString().includes("exit")) {

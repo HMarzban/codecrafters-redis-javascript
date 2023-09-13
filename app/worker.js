@@ -1,7 +1,5 @@
 const net = require("net");
 
-// *2\r\n$4\r\nECHO\r\n$3\r\nhey\r\n
-
 const isCommand = (message) => {
   const normalized = message.at(0).toLowerCase();
   console.log(normalized, "normalized");
@@ -20,6 +18,8 @@ const isCommand = (message) => {
   }
   return false;
 };
+
+const normalizedReq = (req) => req.toLowerCase().split("\r\n");
 
 const getCommand = (req) => {
   const dataNoLengths = req.filter((x) => x.charAt(0) !== "$");
@@ -45,6 +45,8 @@ const server = net.createServer({ keepAlive: true }, (connection) => {
   connection.on("data", (req) => {
     const requestCleansed = req
       .toString()
+      .replace("\r\n", "")
+      .replace("\\r\\n", "")
       .split(/(\s+)/)
       .filter((e) => e.trim().length > 0);
 

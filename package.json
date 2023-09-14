@@ -1,0 +1,12 @@
+{
+  "name": "codecrafters-redis-javascript",
+  "version": "1.0.0",
+  "main": "app/main.js",
+  "repository": "https://git.codecrafters.io/8c2e783dc672dce9",
+  "author": "Hossein <marzban98@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node app/main.js",
+    "test": "sh ./test_redis.sh"
+  }
+}

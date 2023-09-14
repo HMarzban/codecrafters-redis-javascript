@@ -23,7 +23,9 @@ const server = () => {
     });
   });
 
-  return server;
+  server.listen(6379, () => {
+    console.info(`server is listening, PID: ${process.pid}`);
+  });
 };
 
 module.exports = server;

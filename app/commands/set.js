@@ -40,6 +40,7 @@ const handleDBSet = async (key, value, setBehaviour) => {
     (setBehaviour === "nx" && !keyExists) ||
     (setBehaviour === "xx" && keyExists)
   ) {
+    console.log("sayve db", { key, value });
     await db.set(key, value);
     return true;
   }

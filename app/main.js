@@ -11,6 +11,7 @@ if (cluster.isMaster) {
 
   // Handle messages from worker
   cluster.on("message", (worker, message) => {
+    console.log("message worker =>>", { message });
     if (message.command === "set") {
       dataStore.set(message.key, message.value);
       console.log("set");
@@ -21,6 +22,7 @@ if (cluster.isMaster) {
     } else if (message.command === "get") {
       console.log("get");
       const value = dataStore.get(message.key);
+      console.log("workersend data =>", { value: value, message });
       worker.send({ value: value });
     } else if (message.command === "delete") {
       if (dataStore.has(message.key)) {

@@ -32,7 +32,7 @@ const validateExpiryTime = (expiryTime) => {
   return null;
 };
 
-const SET = async (query, connection) => {
+const SET = async (connection, query) => {
   const timeOptions = ["ex", "px", "exat", "pxat", "keepttl"];
   const [key, value, expiryType, expiryTimeRaw] = query;
 
@@ -89,6 +89,7 @@ const SET = async (query, connection) => {
 
   await db.set(key, { value, expiryType, expiryTime });
   connection.write("+OK\r\n");
+
   return true;
 };
 

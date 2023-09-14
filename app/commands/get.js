@@ -7,6 +7,7 @@ const GET = async (connection, data) => {
     key,
     result,
     data,
+    exist: await db.has(key),
   });
   if (result) connection.write(`+${result.value}\r\n`);
   else connection.write("$-1\r\n");

@@ -54,8 +54,27 @@ function deletekey(key) {
   });
 }
 
+function has(key) {
+  return new Promise((resolve, reject) => {
+    process.send({ command: "has", key }, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        process.once("message", (message) => {
+          if (message.hasOwnProperty("exists")) {
+            resolve(message.exists);
+          } else {
+            resolve(false);
+          }
+        });
+      }
+    });
+  });
+}
+
 module.exports = {
   set,
   get,
   delete: deletekey,
+  has,
 };

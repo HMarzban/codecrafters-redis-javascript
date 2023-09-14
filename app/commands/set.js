@@ -32,9 +32,54 @@ const validateExpiryTime = (expiryTime) => {
   return null;
 };
 
+const handleDBSet = async (key, value, setBehaviour) => {
+  const keyExists = await db.has(key);
+
+  if (
+    !setBehaviour ||
+    (setBehaviour === "nx" && !keyExists) ||
+    (setBehaviour === "xx" && keyExists)
+  ) {
+    await db.set(key, value);
+    return true;
+  }
+
+  return false; // Handle cases that don't match any of the conditions.
+};
+
+//Syntax:
+// SET key value [NX | XX] [GET] [EX seconds | PX milliseconds | EXAT unix-time-seconds | PXAT unix-time-milliseconds | KEEPTTL]
 const SET = async (connection, query) => {
+  // Constants
   const timeOptions = ["ex", "px", "exat", "pxat", "keepttl"];
-  const [key, value, expiryType, expiryTimeRaw] = query;
+  const setBehaviourOptions = ["nx", "xx"];
+  const getBehaviourOptions = ["get"];
+
+  // Default Values
+  let key, value, setBehaviour, getBehaviour, expiryType, expiryTimeRaw;
+
+  // First two are always key and value
+  [key, value, ...query] = query;
+
+  query = query.map((item) => item.toLowerCase());
+
+  // Check for SET behaviours NX or XX
+  if (setBehaviourOptions.includes(query[0])) {
+    setBehaviour = query.shift();
+  }
+
+  // Check for GET behaviour
+  if (getBehaviourOptions.includes(query[0])) {
+    getBehaviour = query.shift();
+  }
+
+  // Check for timeOptions
+  if (timeOptions.includes(query[0])) {
+    expiryType = query.shift();
+    if (["ex", "px", "exat", "pxat"].includes(expiryType)) {
+      expiryTimeRaw = query.shift();
+    }
+  }
 
   const expiryTime = +expiryTimeRaw;
 
@@ -47,7 +92,12 @@ const SET = async (connection, query) => {
   if (expiryType === "keepttl") {
     const keyData = await db.get(key);
     if (keyData) {
-      await db.set(key, { ...keyData, value });
+      handleDBSet(key, { ...keyData, value }, setBehaviour);
+    }
+    if (getBehaviour && keyData) {
+      connection.write(`+"${keyData.value}"\r\n`);
+    } else {
+      connection.write("+OK\r\n");
     }
     return true;
   }
@@ -55,13 +105,21 @@ const SET = async (connection, query) => {
   // overwrite existing key and reset expiry
   if (!expiryType && !expiryTime) {
     const keyData = await db.get(key);
-    await db.set(key, {
-      ...keyData,
-      value,
-      expiryType: null,
-      expiryTime: null,
-    });
-    connection.write("+OK\r\n");
+    handleDBSet(
+      key,
+      {
+        ...keyData,
+        value,
+        expiryType: null,
+        expiryTime: null,
+      },
+      setBehaviour
+    );
+    if (getBehaviour && keyData) {
+      connection.write(`+"${keyData.value}"\r\n`);
+    } else {
+      connection.write("+OK\r\n");
+    }
     return true;
   }
 
@@ -80,16 +138,23 @@ const SET = async (connection, query) => {
   }
 
   setTimeout(async () => {
-    console.log("expired");
-    const keyData = await db.get(key);
-    if (keyData?.expiryTime) {
+    console.info("expired");
+    const data = await db.get(key);
+    if (data?.expiryTime) {
       await db.delete(key);
     }
   }, delay);
 
-  await db.set(key, { value, expiryType, expiryTime });
-  connection.write("+OK\r\n");
+  if (getBehaviour) {
+    const data = await db.get(key);
+    handleDBSet(key, { value, expiryType, expiryTime }, setBehaviour);
+    connection.write(`+"${data.value}"\r\n`);
+    return true;
+  } else {
+    handleDBSet(key, { value, expiryType, expiryTime }, setBehaviour);
+  }
 
+  connection.write("+OK\r\n");
   return true;
 };
 

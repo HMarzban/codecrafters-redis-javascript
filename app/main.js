@@ -4,7 +4,7 @@ const server = require("./worker")();
 
 if (cluster.isMaster) {
   // Code for the master process
-  console.log(`Master ${process.pid} is running`);
+  console.info(`Master ${process.pid} is running`);
 
   // The shared data store
   const dataStore = new Map();
@@ -14,6 +14,9 @@ if (cluster.isMaster) {
     if (message.command === "set") {
       dataStore.set(message.key, message.value);
       worker.send({ status: "ok" });
+    } else if (message.command === "has") {
+      const hasKey = dataStore.has(message.key);
+      worker.send({ exists: hasKey });
     } else if (message.command === "get") {
       const value = dataStore.get(message.key);
       worker.send({ value: value });

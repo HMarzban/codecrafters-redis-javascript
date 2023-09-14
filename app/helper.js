@@ -23,10 +23,9 @@ const isCommand = (message) => {
 const getCommand = (req) => {
   const [length, ...data] = req;
   const dataNoLengths = data.filter((x) => x.charAt(0) !== "$");
-
   if (isCommand(dataNoLengths)) {
     return {
-      command: dataNoLengths[0],
+      command: dataNoLengths[0].toLowerCase(),
       data: dataNoLengths.slice(1),
     };
   }

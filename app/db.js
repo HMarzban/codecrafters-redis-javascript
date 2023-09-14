@@ -23,6 +23,7 @@ function get(key) {
         reject(error);
       } else {
         process.once("message", (message) => {
+          console.log({ message });
           if (message.hasOwnProperty("value")) {
             resolve(message.value);
           } else {

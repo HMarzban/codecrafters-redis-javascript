@@ -18,7 +18,6 @@ if (cluster.isMaster) {
       const hasKey = dataStore.has(message.key);
       worker.send({ exists: hasKey });
     } else if (message.command === "get") {
-      console.log({ dataStore });
       const value = dataStore.get(message.key);
       worker.send({ value: value });
     } else if (message.command === "delete") {

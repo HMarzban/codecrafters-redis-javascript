@@ -4,8 +4,7 @@ const { getCommand } = require("./helper.js");
 
 const server = () => {
   const server = net.createServer({ keepAlive: true }, (connection) => {
-    // Handle connection
-    console.log("client connected, PID:", process.pid);
+    console.info("client connected, PID:", process.pid);
 
     connection.on("data", (req) => {
       const requestCleansed = req.toString().trim().split("\r\n");
@@ -15,12 +14,12 @@ const server = () => {
       try {
         commands(command, data, connection);
       } catch (error) {
-        console.log("commands:", error);
+        console.error("commands:", error);
       }
     });
 
     connection.on("end", () => {
-      console.log("client disconnected, PID:", process.pid);
+      console.info("client disconnected, PID:", process.pid);
     });
   });
 

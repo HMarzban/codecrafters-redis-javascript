@@ -16,6 +16,7 @@ const isCommand = (message) => {
   if (normalized === "exit") {
     return true;
   }
+
   return false;
 };
 

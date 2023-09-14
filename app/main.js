@@ -35,18 +35,18 @@ if (cluster.isMaster) {
 
   // Handle worker events
   cluster.on("fork", (worker) => {
-    console.log(`Worker ${worker.process.pid} is forked`);
+    console.info(`Worker ${worker.process.pid} is forked`);
   });
 
   cluster.on("exit", (worker, code, signal) => {
-    console.log(
+    console.info(
       `Worker ${worker.process.pid} died with code ${code} and signal ${signal}`
     );
-    console.log("Forking a new worker...");
+    console.info("Forking a new worker...");
     cluster.fork();
   });
 } else {
   server.listen(6379, () => {
-    console.log(`server is listening, PID: ${process.pid}`);
+    console.info(`server is listening, PID: ${process.pid}`);
   });
 }

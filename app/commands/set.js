@@ -84,6 +84,7 @@ const SET = async (connection, query) => {
   const expiryTime = +expiryTimeRaw;
 
   console.log({
+    query,
     key,
     value,
     setBehaviour,

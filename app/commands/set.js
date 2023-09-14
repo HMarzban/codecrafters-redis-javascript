@@ -115,6 +115,10 @@ const SET = async (connection, query) => {
   // overwrite existing key and reset expiry
   if (!expiryType && !expiryTime) {
     const keyData = await db.get(key);
+    console.log({
+      key,
+      value,
+    });
     handleDBSet(
       key,
       {

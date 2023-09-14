@@ -83,6 +83,15 @@ const SET = async (connection, query) => {
 
   const expiryTime = +expiryTimeRaw;
 
+  console.log({
+    key,
+    value,
+    setBehaviour,
+    getBehaviour,
+    expiryType,
+    expiryTimeRaw,
+  });
+
   const expiryTypeError = validateExpiryType(expiryType, timeOptions);
   if (expiryTypeError) {
     connection.write(expiryTypeError + "\r\n");

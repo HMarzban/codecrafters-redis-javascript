@@ -44,6 +44,8 @@ const handleDBSet = async (key, value, setBehaviour) => {
     return true;
   }
 
+  console.log("keyExists", keyExists, "setBehaviour", setBehaviour);
+
   return false; // Handle cases that don't match any of the conditions.
 };
 
@@ -118,6 +120,7 @@ const SET = async (connection, query) => {
     console.log({
       key,
       value,
+      setBehaviour,
     });
     handleDBSet(
       key,

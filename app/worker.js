@@ -11,12 +11,6 @@ const server = () => {
 
       const { command, data } = getCommand(requestCleansed);
 
-      console.log({
-        requestCleansed,
-        command,
-        data,
-      });
-
       try {
         commands(command, data, connection);
       } catch (error) {

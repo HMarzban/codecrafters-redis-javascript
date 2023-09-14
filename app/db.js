@@ -19,12 +19,10 @@ function set(key, value) {
 function get(key) {
   return new Promise((resolve, reject) => {
     process.send({ command: "get", key }, (error) => {
-      console.log({ error, command: "get", key });
       if (error) {
         reject(error);
       } else {
         process.once("message", (message) => {
-          console.log({ message });
           if (message.hasOwnProperty("value")) {
             resolve(message.value);
           } else {

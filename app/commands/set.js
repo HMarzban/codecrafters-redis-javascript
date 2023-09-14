@@ -40,12 +40,9 @@ const handleDBSet = async (key, value, setBehaviour) => {
     (setBehaviour === "nx" && !keyExists) ||
     (setBehaviour === "xx" && keyExists)
   ) {
-    console.log("sayve db", { key, value });
     await db.set(key, value);
     return true;
   }
-
-  console.log("keyExists", keyExists, "setBehaviour", setBehaviour);
 
   return false; // Handle cases that don't match any of the conditions.
 };
@@ -86,16 +83,6 @@ const SET = async (connection, query) => {
 
   const expiryTime = +expiryTimeRaw;
 
-  console.log({
-    query,
-    key,
-    value,
-    setBehaviour,
-    getBehaviour,
-    expiryType,
-    expiryTimeRaw,
-  });
-
   const expiryTypeError = validateExpiryType(expiryType, timeOptions);
   if (expiryTypeError) {
     connection.write(expiryTypeError + "\r\n");
@@ -118,11 +105,7 @@ const SET = async (connection, query) => {
   // overwrite existing key and reset expiry
   if (!expiryType && !expiryTime) {
     const keyData = await db.get(key);
-    console.log({
-      key,
-      value,
-      setBehaviour,
-    });
+
     handleDBSet(
       key,
       {

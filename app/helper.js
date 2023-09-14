@@ -13,6 +13,12 @@ const isCommand = (message) => {
   if (normalized === "get") {
     return true;
   }
+  if (normalized === "del") {
+    return true;
+  }
+  if (normalized === "ttl") {
+    return true;
+  }
   if (normalized === "exit") {
     return true;
   }
@@ -23,6 +29,7 @@ const isCommand = (message) => {
 const getCommand = (req) => {
   const [length, ...data] = req;
   const dataNoLengths = data.filter((x) => x.charAt(0) !== "$");
+
   if (isCommand(dataNoLengths)) {
     return {
       command: dataNoLengths[0].toLowerCase(),

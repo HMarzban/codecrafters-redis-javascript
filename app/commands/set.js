@@ -95,7 +95,7 @@ const SET = async (connection, query) => {
       handleDBSet(key, { ...keyData, value }, setBehaviour);
     }
     if (getBehaviour && keyData) {
-      connection.write(`+"${keyData.value}"\r\n`);
+      connection.write(`+"${value}"\r\n`);
     } else {
       connection.write("+OK\r\n");
     }
@@ -116,7 +116,7 @@ const SET = async (connection, query) => {
       setBehaviour
     );
     if (getBehaviour && keyData) {
-      connection.write(`+"${keyData.value}"\r\n`);
+      connection.write(`+${keyData.value}\r\n`);
     } else {
       connection.write("+OK\r\n");
     }
@@ -146,12 +146,23 @@ const SET = async (connection, query) => {
   }, delay);
 
   if (getBehaviour) {
-    const data = await db.get(key);
-    handleDBSet(key, { value, expiryType, expiryTime }, setBehaviour);
-    connection.write(`+"${data.value}"\r\n`);
+    const keyData = await db.get(key);
+    handleDBSet(
+      key,
+      { value, expiryType, expiryTime, ttx: Date.now() + delay },
+      setBehaviour
+    );
+
+    if (keyData) {
+      connection.write(`+${keyData.value}\r\n`);
+    }
     return true;
   } else {
-    handleDBSet(key, { value, expiryType, expiryTime }, setBehaviour);
+    handleDBSet(
+      key,
+      { value, expiryType, expiryTime, ttx: Date.now() + delay },
+      setBehaviour
+    );
   }
 
   connection.write("+OK\r\n");

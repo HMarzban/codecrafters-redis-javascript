@@ -1,43 +1,50 @@
-[![progress-banner](https://backend.codecrafters.io/progress/redis/b26b2620-8a48-4af9-b624-3729b82c74a7)](https://app.codecrafters.io/users/HMarzban?r=2qF)
+# Codecrafters Redis in JavaScript
 
-This is a 
-["Build Your Own Redis" Challenge](https://codecrafters.io/challenges/redis).### About CodeCrafters Challenge
+[![Codecrafters Challenge Progress](https://backend.codecrafters.io/progress/redis/b26b2620-8a48-4af9-b624-3729b82c74a7)](https://app.codecrafters.io/users/HMarzban?r=2qF)
 
-This is a part of the "Build Your Own Redis" challenge by CodeCrafters. The goal of the challenge is to understand the underlying concepts of Redis by building a basic version from scratch.
+Welcome! This is my take on the [Codecrafters Redis Challenge](https://codecrafters.io/challenges/redis) Redis Challenge. I've delved deep into the heart of Redis and ended up crafting my own little version in JavaScript. Dive in and check it out!
 
-Welcome to my solution for the [codecrafters](https://app.codecrafters.io/) Redis challenge! In this repository, I've created a toy Redis clone that not only handles the basic commands like PING, GET, and SET but also includes an extended set of features that was not in the challenge. With benchmarking tools and extensive testing, this repository is meant to be both an educational resource and a fun exploration into the world of Redis.
+## Introduction
+
+Welcome to my solution for the [Codecrafters](https://codecrafters.io/challenges/redis) Redis challenge! In this repository, I've created a toy Redis clone that not only handles the basic commands like PING, GET, and SET but also includes an extended set of features that was not in the challenge. With benchmarking tools and extensive testing, this repository is meant to be both an educational resource and a fun exploration into the world of Redis.
 
 ## Features
 
-- Implementation of basic Redis commands: PING, GET, SET.
-- Extended command set including: DEL, ECHO, TTL.
-- Comprehensive testing with the `test.sh` script to test various command combinations.
-- Benchmarking capabilities with the `benchmark.sh` script to measure performance.
-- Scalable worker processes with environment-variable-based control for parallel processing. _(nodejs, singel thread give you the best perfomance)_
-
-
+- **Core Redis Commands**: Successfully implemented the `PING`, `GET`, and `SET` commands.
+- **Extended Command Set**: Integrated additional commands like `DEL`, `ECHO`, and `TTL` for a richer experience.
+- **Robust Testing**: Leveraged the `test.sh` script to ensure all command combinations operate as expected.
+- **Performance Benchmarking**: Introduced `benchmark.sh` for performance measurement and analysis.
+- **Scalable Workers**: Easily scale worker processes using environment variables. (nodejs, singel thread give you the best perfomance)
 
 ## Getting Started
 
-1. Clone the repository
+### Prerequisites
 
-3. Make sure you have [nodejs](https://nodejs.org/) and [redis-cli](https://redis.io/docs/ui/cli/) installed on your machine.
+Ensure [Node.js](https://nodejs.org/) and [redis-cli](https://redis.io/docs/ui/cli/) are installed on your machine.
 
-2. Start the application:
+### Setup & Running
 
-```sh
-npm start
-```
+1. **Clone the Repository**:
 
-For custom worker counts, use the provided npm scripts:
+   ```sh
+   git clone https://github.com/HMarzban/codecrafters-redis-javascript.git
+   ```
 
-- `npm run start:worker4`: Start with 4 worker processes.
-- `npm run start:worker2`: Start with 2 worker processes.
-- `npm run start:worker1`: Start with a single worker process.
+2. **Start the Application:**
+
+   ```sh
+   npm start
+   ```
+
+To customize the worker count:
+
+- 4 Workers: `npm run start:worker4`
+- 2 Workers: `npm run start:worker2`
+- Single Worker: `npm run start:worker1`
 
 ## Testing
 
-Execute the test script to test the implemented commands:
+Run the test script to validate the command implementations:
 
 ```sh
 npm run test
@@ -45,10 +52,12 @@ npm run test
 
 ## Benchmarking
 
-To evaluate the performance, you can use the benchmarking script:
+Analyze the performance of the system with the benchmarking script:
 
 ```sh
 npm run benchmark
 ```
 
-> Note: in order to run the benchmark and test scripts, node app must be running in the background.
+> Note: Ensure the node application is hitting in the background before initiating tests or benchmarks.
+
+I hope you find this project insightful and get a deeper understanding of how Redis works in the background. If you're curious like me, dive in and have fun learning!

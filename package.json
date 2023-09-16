@@ -1,0 +1,16 @@
+{
+  "name": "codecrafters-redis-javascript",
+  "version": "1.0.0",
+  "repository": "https://git.codecrafters.io/8c2e783dc672dce9",
+  "author": "Hossein <marzban98@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node app/main.js",
+    "start:worker4": "WORKER_COUNT=4 node app/main.js",
+    "start:worker2": "WORKER_COUNT=2 node app/main.js",
+    "start:worker1": "WORKER_COUNT=1 node app/main.js",
+    "test": "sh ./test.sh",
+    "benchmark": "sh ./benchmark_redis.sh"
+  }
+}

@@ -6,12 +6,40 @@ Welcome! This is my take on the [Codecrafters Redis Challenge](https://codecraft
 
 ## Introduction
 
-Welcome to my solution for the [Codecrafters](https://codecrafters.io/challenges/redis) Redis challenge! In this repository, I've created a toy Redis clone that not only handles the basic commands like PING, GET, and SET but also includes an extended set of features that was not in the challenge. With benchmarking tools and extensive testing, this repository is meant to be both an educational resource and a fun exploration into the world of Redis.
+Welcome to my solution for the [Codecrafters](https://codecrafters.io/challenges/redis) Redis challenge! In this repository, I've created a toy Redis clone that not only handles the basic commands like `PING`, `GET`, and `SET` but also includes an extended `SET` of features <u>that was not in the challenge</u>. With benchmarking tools and extensive testing, this repository is meant to be both an educational resource and a fun exploration into the world of Redis.
 
 ## Features
 
-- **Core Redis Commands**: Successfully implemented the `PING`, `GET`, and `SET` commands.
-- **Extended Command Set**: Integrated additional commands like `DEL`, `ECHO`, and `TTL` for a richer experience.
+### SET Command
+
+Syntax
+
+```sh
+SET key value [NX | XX] [GET] [EX seconds | PX milliseconds |
+  EXAT unix-time-seconds | PXAT unix-time-milliseconds | KEEPTTL]
+```
+
+Supportet Options:
+
+- `EX` seconds -- Set the specified expire time, in seconds.
+- `PX` milliseconds -- Set the specified expire time, in milliseconds.
+- `EXAT` timestamp-seconds -- Set the specified Unix time at which the key will expire, in seconds.
+- `PXAT` timestamp-milliseconds -- Set the specified Unix time at which the key will expire, in milliseconds.
+- `NX` -- Only set the key if it does not already exist.
+- `XX` -- Only set the key if it already exists.
+- `KEEPTTL` -- Retain the time to live associated with the key.
+- `GET` -- Return the old string stored at key, or nil if key did not exist. An error is returned and SET aborted if the value stored at key is not a string.
+
+### Other Commands
+
+- `DEL`  -- Delete a key
+- `ECHO` -- Echo the given string
+- `TTL`  -- Get the time to live for a key
+- `PING` -- Ping the server
+- `EXIT` -- Quit the server
+
+### Additional Features
+
 - **Robust Testing**: Leveraged the `test.sh` script to ensure all command combinations operate as expected.
 - **Performance Benchmarking**: Introduced `benchmark.sh` for performance measurement and analysis.
 - **Scalable Workers**: Easily scale worker processes using environment variables. (nodejs, singel thread give you the best perfomance)

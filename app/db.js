@@ -1,53 +1,29 @@
-/**
- * Sends an IPC command and waits for a message in response.
- *
- * @param {object} payload - The data to send to the master process.
- * @returns {Promise} - A promise that resolves with the message from the master process.
- */
-function sendCommand(payload) {
+// Correlation IDs keep concurrent clients from consuming each other's IPC replies.
+let sequence = 0;
+const pending = new Map();
+process.on("message", (message) => {
+  const waiter = pending.get(message.id);
+  if (!waiter) return;
+  pending.delete(message.id);
+  if (message.error) waiter.reject(new Error(message.error));
+  else waiter.resolve(message.result);
+});
+
+function request(command, data) {
   return new Promise((resolve, reject) => {
-    process.send(payload, (error) => {
-      if (error) {
-        reject(error);
-      } else {
-        process.once("message", resolve);
-      }
+    const id = ++sequence;
+    pending.set(id, { resolve, reject });
+    process.send({ id, command, ...data }, (error) => {
+      if (!error) return;
+      pending.delete(id);
+      reject(error);
     });
   });
 }
-
-async function set(key, value) {
-  const response = await sendCommand({ command: "set", key, value });
-  if (response.status !== "ok") {
-    throw new Error("Failed to set value in master.");
-  }
-}
-
-async function get(key) {
-  const response = await sendCommand({ command: "get", key });
-  return response.value || null;
-}
-
-async function deletekey(key) {
-  const response = await sendCommand({ command: "delete", key });
-  switch (response.status) {
-    case "ok":
-      break;
-    case "not_found":
-      throw new Error("Key not found in master.");
-    default:
-      throw new Error("Failed to delete key from master.");
-  }
-}
-
-async function has(key) {
-  const response = await sendCommand({ command: "has", key });
-  return response.exists || false;
-}
-
+const keyId = (key) => key.toString("base64");
 export default {
-  set,
-  get,
-  delete: deletekey,
-  has,
+  get: (key) => request("get", { key: keyId(key) }),
+  set: (key, value, options) => request("set", { key: keyId(key), value, options }),
+  delete: (keys) => request("delete", { keys: keys.map(keyId) }),
+  ttl: (key) => request("ttl", { key: keyId(key) }),
 };

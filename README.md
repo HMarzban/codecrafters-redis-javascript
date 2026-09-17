@@ -67,5 +67,4 @@ claims are supplied by this maintenance pass.
 
 ## License
 
-The original package manifest declares MIT, but the repository has no standalone
-license file. This maintenance pass does not add or change licensing terms.
+Licensed under the [MIT License](LICENSE).

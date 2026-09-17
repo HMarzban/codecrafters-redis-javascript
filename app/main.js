@@ -1,4 +1,3 @@
-import os from "node:os";
 import cluster from "node:cluster";
 import startWorkerProcess from "./worker.js";
 import IPC from "./ipc.js";
@@ -9,12 +8,22 @@ function startMasterProcess() {
   // Inter-process communication (IPC)
   IPC(cluster);
 
+  cluster.setupPrimary({ serialization: "advanced" });
+
   // Fork workers
-  const defaultNumWorkers = os.cpus().length;
+  const defaultNumWorkers = 1;
   const numWorkers = process.env.WORKER_COUNT || defaultNumWorkers;
 
   for (let i = 0; i < numWorkers; i++) {
     cluster.fork();
+  }
+
+  let shuttingDown = false;
+  for (const signal of ["SIGTERM", "SIGINT"]) {
+    process.on(signal, () => {
+      shuttingDown = true;
+      for (const worker of Object.values(cluster.workers)) worker.kill(signal);
+    });
   }
 
   // Handle worker events
@@ -27,7 +36,7 @@ function startMasterProcess() {
       `Worker ${workerInstance.process.pid} died with code ${code} and signal ${signal}`
     );
     console.info("Forking a new worker...");
-    cluster.fork();
+    if (!shuttingDown) cluster.fork();
   });
 }
 

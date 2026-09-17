@@ -1,91 +1,71 @@
-# Codecrafters Redis in JavaScript
+# A Redis learning implementation in JavaScript
 
-[![Codecrafters Challenge Progress](https://backend.codecrafters.io/progress/redis/b26b2620-8a48-4af9-b624-3729b82c74a7)](https://app.codecrafters.io/users/HMarzban?r=2qF)
+This started with the [CodeCrafters Redis challenge](https://codecrafters.io/challenges/redis)
+and grew into an experiment with RESP framing, TCP streams and a shared store behind
+Node.js cluster workers. It is an in-memory learning project, not a Redis replacement.
 
-Welcome! This is my take on the [Codecrafters Redis Challenge](https://codecrafters.io/challenges/redis) Redis Challenge. I've delved deep into the heart of Redis and ended up crafting my own little version in JavaScript. Dive in and check it out!
+## Run
 
-## Introduction
-
-Welcome to my solution for the [Codecrafters](https://codecrafters.io/challenges/redis) Redis challenge! In this repository, I've created a toy Redis clone that not only handles the basic commands like `PING`, `GET`, and `SET` but also includes an extended `SET` of features <u>that was not in the challenge</u>. With benchmarking tools and extensive testing, this repository is meant to be both an educational resource and a fun exploration into the world of Redis.
-
-## Features
-
-### SET Command
-
-Syntax
+Node.js 22+ is required. There are no npm dependencies.
 
 ```sh
-SET key value [NX | XX] [GET] [EX seconds | PX milliseconds |
-  EXAT unix-time-seconds | PXAT unix-time-milliseconds | KEEPTTL]
+npm start                         # one worker, 127.0.0.1:6379
+WORKER_COUNT=2 PORT=6380 npm start  # shared primary store, two TCP workers
+npm test                          # isolated TCP/cluster fixtures; no Redis install
 ```
 
-Supportet Options:
+`HOST` changes the bind address. There is no authentication; keep the learning server
+on loopback. The in-memory store disappears when the primary process exits.
 
-- `EX` seconds -- Set the specified expire time, in seconds.
-- `PX` milliseconds -- Set the specified expire time, in milliseconds.
-- `EXAT` timestamp-seconds -- Set the specified Unix time at which the key will expire, in seconds.
-- `PXAT` timestamp-milliseconds -- Set the specified Unix time at which the key will expire, in milliseconds.
-- `NX` -- Only set the key if it does not already exist.
-- `XX` -- Only set the key if it already exists.
-- `KEEPTTL` -- Retain the time to live associated with the key.
-- `GET` -- Return the old string stored at key, or nil if key did not exist. An error is returned and SET aborted if the value stored at key is not a string.
+## Implemented scope
 
-### Other Commands
+| Area | Behavior |
+| --- | --- |
+| Protocol | RESP2 arrays of bulk strings; fragmented and coalesced TCP requests; binary-safe keys/values and replies. |
+| Commands | `PING [message]`, `ECHO`, `GET`, `SET`, `DEL`, `TTL`, and a custom `EXIT`. |
+| SET options | `NX`, `XX`, `GET`, `EX`, `PX`, `EXAT`, `PXAT`, `KEEPTTL`; conditional writes are atomic in the primary. |
+| Expiry | Checked on access; updating expiry cannot be undone by an older timer. |
+| Concurrency | Ordered replies per connection and correlated worker/primary IPC requests. |
+| Limits | 1 MiB request/buffer limit and 1,024 command arguments; malformed frames close the connection with an error. |
 
-- `DEL`  -- Delete a key
-- `ECHO` -- Echo the given string
-- `TTL`  -- Get the time to live for a key
-- `PING` -- Ping the server
-- `EXIT` -- Quit the server
+Not implemented: persistence, replication, Redis Cluster, pub/sub, transactions,
+RESP3, inline commands, authentication, eviction or production resource management.
+Expired entries that are never read again remain allocated; the store has no memory
+limit. Replies do not yet implement socket backpressure. These are deliberate limits
+of this learning scope, not guarantees of Redis compatibility.
 
-### Additional Features
+## Verification
 
-- **Robust Testing**: Leveraged the `test.sh` script to ensure all command combinations operate as expected.
-- **Performance Benchmarking**: Introduced `benchmark.sh` for performance measurement and analysis.
-- **Scalable Workers**: Easily scale worker processes using environment variables. (nodejs, singel thread give you the best perfomance)
+`npm test` exercises byte splits, pipelines, binary/empty values, protocol and command
+errors, expiry replacement, conditional options and concurrent clients on two workers.
+GitHub Actions runs these fixtures on Node 22 and 24.
 
-## Getting Started
-
-### Prerequisites
-
-Ensure [Node.js](https://nodejs.org/) and [redis-cli](https://redis.io/docs/ui/cli/) are installed on your machine.
-
-### Setup & Running
-
-1. **Clone the Repository**:
-
-   ```sh
-   git clone https://github.com/HMarzban/codecrafters-redis-javascript.git
-   ```
-
-2. **Start the Application:**
-
-   ```sh
-   npm start
-   ```
-
-To customize the worker count:
-
-- 4 Workers: `npm run start:worker4`
-- 2 Workers: `npm run start:worker2`
-- Single Worker: `npm run start:worker1`
-
-## Testing
-
-Run the test script to validate the command implementations:
+The earlier redis-cli shell assertions remain available:
 
 ```sh
-npm run test
+PORT=6380 npm run test:legacy # requires a separately running server on that port
 ```
 
-## Benchmarking
+## Benchmark methodology
 
-Analyze the performance of the system with the benchmarking script:
+The original harness is available as `npm run benchmark -- 1000 100`. It starts a new
+redis-cli process/connection for each operation, so its mean includes client startup,
+shell and network costs. It does **not** measure isolated server latency. The former
+package script referenced a nonexistent filename; it now invokes `benchmark.sh`.
+
+For a persistent-client experiment, install the Redis tools and run against a separate
+learning server:
 
 ```sh
-npm run benchmark
+redis-benchmark -h 127.0.0.1 -p 6380 -t set,get -n 10000 -c 20 -d 100 --csv
 ```
 
-> Note: Ensure the node application is hitting in the background before initiating tests or benchmarks.
+Record the commit, Node version, OS/CPU/RAM, worker count, client count, payload size,
+request count, throughput, latency percentiles and errors. Compare the same workload
+and environment, repeat runs, and retain raw output. No benchmark results or speedup
+claims are supplied by this maintenance pass.
 
-I hope you find this project insightful and get a deeper understanding of how Redis works in the background. If you're curious like me, dive in and have fun learning!
+## License
+
+The original package manifest declares MIT, but the repository has no standalone
+license file. This maintenance pass does not add or change licensing terms.

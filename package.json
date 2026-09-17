@@ -10,7 +10,11 @@
     "start:worker4": "WORKER_COUNT=4 node app/main.js",
     "start:worker2": "WORKER_COUNT=2 node app/main.js",
     "start:worker1": "WORKER_COUNT=1 node app/main.js",
-    "test": "sh ./test.sh",
-    "benchmark": "sh ./benchmark_redis.sh"
+    "test": "node --test",
+    "benchmark": "bash ./benchmark.sh",
+    "test:legacy": "bash ./test.sh"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -1,7 +1,14 @@
 #!/bin/bash
 
+set -euo pipefail
+
 COUNT=${1:-1000}
 DATASIZE=${2:-100}
+
+[[ "$COUNT" =~ ^[1-9][0-9]*$ && "$DATASIZE" =~ ^[1-9][0-9]*$ ]] || { echo "Counts must be positive integers" >&2; exit 1; }
+
+echo "Legacy shell harness: each operation starts redis-cli and opens a connection."
+echo "These timings are not isolated Redis command latency."
 
 # Prepare random data once to reuse
 RANDOM_DATA=$(head -c $DATASIZE </dev/urandom | base64)
@@ -28,28 +35,28 @@ current_time_ms() {
 echo "Starting SET operations..."
 START_SET=$(current_time_ms)
 for i in $(seq 1 $COUNT); do
-    echo "SET key$i $RANDOM_DATA" | redis-cli > /dev/null
+    echo "SET key$i $RANDOM_DATA" | redis-cli -p "${PORT:-6379}" > /dev/null
     progress_indicator $i
 done
 END_SET=$(current_time_ms)
 DURATION_SET=$((END_SET - START_SET))
-echo -e "\nAverage SET time: $((DURATION_SET * 1000 / COUNT)) microseconds"
+echo -e "\nMean SET harness time (includes process/connection overhead): $((DURATION_SET * 1000 / COUNT)) microseconds"
 
 # Measure GET operations
 echo "Starting GET operations..."
 START_GET=$(current_time_ms)
 for i in $(seq 1 $COUNT); do
-    echo "GET key$i" | redis-cli > /dev/null
+    echo "GET key$i" | redis-cli -p "${PORT:-6379}" > /dev/null
     progress_indicator $i
 done
 END_GET=$(current_time_ms)
 DURATION_GET=$((END_GET - START_GET))
-echo -e "\nAverage GET time: $((DURATION_GET * 1000 / COUNT)) microseconds"
+echo -e "\nMean GET harness time (includes process/connection overhead): $((DURATION_GET * 1000 / COUNT)) microseconds"
 
 # Cleanup
 echo "Cleaning up..."
 for i in $(seq 1 $COUNT); do
-    echo "DEL key$i" | redis-cli > /dev/null
+    echo "DEL key$i" | redis-cli -p "${PORT:-6379}" > /dev/null
 done
 
 echo "Benchmark completed!"

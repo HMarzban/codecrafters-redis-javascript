@@ -3,35 +3,19 @@ import GET from "./get.js";
 import ECHO from "./echo.js";
 import DEL from "./del.js";
 import TTL from "./ttl.js";
-
-// Mapping commands to their corresponding action functions
+import { bulk } from "../resp.js";
 const commandMap = {
-  ping: (connection) => connection.write("+PONG\r\n"),
-  echo: (connection, data) => ECHO(connection, data),
-  set: (connection, data) => SET(connection, data),
-  get: (connection, data) => GET(connection, data),
-  del: (connection, data) => DEL(connection, data),
-  ttl: (connection, data) => TTL(connection, data),
-  exit: (connection) => {
-    connection.write(`You will be disconnected, PID: ${process.pid}\r\n`);
-    connection.end();
-  },
+  ping: [0, 1, (connection, args) => connection.write(args.length ? bulk(args[0]) : "+PONG\r\n")],
+  echo: [1, 1, ECHO], set: [2, Infinity, SET], get: [1, 1, GET],
+  del: [1, Infinity, DEL], ttl: [1, 1, TTL],
+  exit: [0, 0, (connection) => connection.end("+OK\r\n")],
 };
-
-/**
- * Executes the given command with the provided data.
- *
- * @param {string} command - The command to be executed.
- * @param {array} data - The data associated with the command.
- * @param {object} connection - The connection object.
- */
-const commands = (command, data, connection) => {
+export default function commands(command, args, connection) {
   const action = commandMap[command];
-  if (action) {
-    return action(connection, data);
-  } else {
-    connection.write("-Error: Unknown command\r\n");
+  if (!Object.hasOwn(commandMap, command)) return connection.write("-ERR unknown command\r\n");
+  const [minimum, maximum, execute] = action;
+  if (args.length < minimum || args.length > maximum) {
+    return connection.write("-ERR wrong number of arguments\r\n");
   }
-};
-
-export default commands;
+  return execute(connection, args);
+}

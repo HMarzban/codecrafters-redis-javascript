@@ -14,11 +14,11 @@ fail_msg() {
 }
 
 set_key() {
-    redis-cli SET "$@"
+    redis-cli -p "${PORT:-6379}" SET "$@"
 }
 
 get_key() {
-    redis-cli GET "$1"
+    redis-cli -p "${PORT:-6379}" GET "$1"
 }
 
 check_value() {
@@ -30,7 +30,7 @@ check_value() {
 }
 
 cleanup() {
-    redis-cli DEL mykey
+    redis-cli -p "${PORT:-6379}" DEL mykey
 }
 
 echo "Starting tests..."
@@ -76,7 +76,7 @@ check_value mykey "With XX" "XX"
 set_key mykey "With TTL" EX 6
 sleep 2
 set_key mykey "With KEEPTTL" KEEPTTL
-remaining_ttl=$(redis-cli TTL mykey)
+remaining_ttl=$(redis-cli -p "${PORT:-6379}" TTL mykey)
 if [[ $remaining_ttl -lt 6 && $remaining_ttl -gt 0 ]]; then
     pass_msg "KEEPTTL. TTL: $remaining_ttl"
 else
@@ -85,7 +85,7 @@ fi
 
 # GET option
 set_key mykey "Original Value"
-old_value=$(redis-cli SET mykey "With GET" GET)
+old_value=$(redis-cli -p "${PORT:-6379}" SET mykey "With GET" GET)
 retrieved=$(get_key mykey)
 if [[ "$old_value" == "Original Value" && "$retrieved" == "With GET" ]]; then
     pass_msg "GET option. Old: $old_value, New: $retrieved"
@@ -93,11 +93,11 @@ else
     fail_msg "GET option. Old: $old_value, New: $retrieved"
 fi
 
-# 1. Multiple Simultaneous SETs
+# 1. Multiple sequential SETs
 set_key key1 "Simultaneous"
 set_key key2 "Simultaneous"
-check_value key1 "Simultaneous" "Simultaneous SET (key1)"
-check_value key2 "Simultaneous" "Simultaneous SET (key2)"
+check_value key1 "Simultaneous" "Sequential SET (key1)"
+check_value key2 "Simultaneous" "Sequential SET (key2)"
 cleanup
 
 # 2. Setting Large Values
@@ -116,7 +116,7 @@ cleanup
 
 # 4. SET then DEL Combination
 set_key tempkey "Temporary"
-redis-cli DEL tempkey
+redis-cli -p "${PORT:-6379}" DEL tempkey
 check_value tempkey "" "DEL After SET"
 cleanup
 
